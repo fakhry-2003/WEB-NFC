@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Web NFC Scanner</title>
+    <style>
+        /* Gaya Sederhana untuk Tampilan */
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f4f4f9;
+            text-align: center;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        #scanButton {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        #scanButton:hover:not(:disabled) {
+            background-color: #0056b3;
+        }
+        #scanButton:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        #result {
+            margin-top: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            background-color: white;
+            width: 90%;
+            max-width: 500px;
+            text-align: left;
+            min-height: 100px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            white-space: pre-wrap; /* Mempertahankan format teks dari <pre> */
+        }
+        .status {
+            font-weight: bold;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .info { color: #ffc107; }
+        #dataContent {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <h1>Web NFC Scanner Sederhana</h1>
+    <p>Aplikasi ini hanya berfungsi di **Chrome pada Android** dan membutuhkan **HTTPS**.</p>
+    
+    <button id="scanButton" disabled>Mulai Scan NFC</button>
+    
+    <div id="result">
+        <div class="status info">Status: Sedang Memeriksa Dukungan NFC...</div>
+        <div id="dataContent">Mohon tunggu. Jika tombol tidak aktif, Web NFC mungkin tidak didukung di perangkat Anda.</div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

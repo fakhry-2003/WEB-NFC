@@ -1,33 +1,35 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const scanButton = document.getElementById('scanButton');
-    const resultDiv = document.getElementById('result');
-    const statusDiv = resultDiv.querySelector('.status');
-    const dataContent = document.getElementById('dataContent');
+    // Mengambil elemen-elemen dari Hero Layout baru
+    const scanButton = document.getElementById('scanButton'); // Tombol di Header
+    const statusDiv = document.getElementById('statusMessage'); // Status di Hero Kiri
+    const dataContent = document.getElementById('dataContent'); // Data di Log Section
+    
+    // Fungsi pembantu untuk memperbarui status
+    const updateStatus = (message, statusClass) => {
+        // Reset kelas status lama dan tambahkan kelas status baru (info, success, error)
+        statusDiv.className = 'status ' + statusClass;
+        statusDiv.textContent = 'Status: ' + message;
+    }
 
     // 1. Cek Dukungan Web NFC
     if (!('NDEFReader' in window)) {
-        statusDiv.textContent = 'Status: Web NFC TIDAK Didukung pada browser/perangkat ini.';
-        statusDiv.classList.remove('info', 'success');
-        statusDiv.classList.add('error');
+        updateStatus('Web NFC TIDAK Didukung. Wajib Chrome Android/HTTPS.', 'error');
         dataContent.textContent = 'Fungsionalitas ini hanya tersedia di Chrome pada Android (melalui koneksi HTTPS).';
-        scanButton.disabled = true;
+        scanButton.disabled = true; // MATI
         return;
     }
     
-    statusDiv.textContent = 'Status: Web NFC Didukung. Tekan tombol untuk mulai.';
-    statusDiv.classList.remove('info', 'error');
-    statusDiv.classList.add('success');
-    scanButton.disabled = false;
+    // Jika lolos cek, tombol diaktifkan
+    updateStatus('Web NFC Didukung. Tekan tombol MULAI SCAN di atas.', 'success');
+    dataContent.textContent = 'Sistem siap. Siapkan Tag NFC Anda.';
+    scanButton.disabled = false; // HIDUP
 
-
+    // --- LOGIKA UTAMA SAAT TOMBOL DIKLIK ---
     scanButton.addEventListener('click', async () => {
         dataContent.textContent = 'Menunggu kartu... Tempelkan kartu NFC Anda sekarang.';
-        statusDiv.textContent = 'Status: Memindai...';
-        statusDiv.classList.remove('success', 'error');
-        statusDiv.classList.add('info');
+        updateStatus('Memindai...', 'info');
         
         try {
-            // Inisialisasi NDEFReader
             const ndef = new NDEFReader();
             // Perintah untuk mulai membaca, ini akan memunculkan prompt izin sistem
             await ndef.scan();
@@ -44,7 +46,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     try {
                         const decoder = new TextDecoder();
-                        // Membaca payload (isi data) dari tag NFC
                         const payload = decoder.decode(record.data);
                         data += `Payload (Teks): ${payload}\n`;
                     } catch (e) {
@@ -53,39 +54,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 dataContent.textContent = data;
-                statusDiv.textContent = 'Status: Pemindaian Berhasil!';
-                statusDiv.classList.remove('info', 'error');
-                statusDiv.classList.add('success');
+                updateStatus('Pemindaian Berhasil!', 'success');
             };
 
             // --- Handler Saat Pembacaan Gagal ---
             ndef.onreadingerror = error => {
-                // Pesan khusus untuk kartu sensitif (ATM, e-Toll, KRL)
                 dataContent.textContent = 
-                    `🛑 PEMBACAAN GAGAL: Kartu Tidak Dapat Diakses.\n\n` +
-                    `Pesan Error Sistem: ${error.message}\n\n` +
-                    `Ini terjadi karena:\n` +
-                    `1. Kartu tersebut adalah kartu keuangan (ATM, e-Toll, KRL), KTP, atau kartu lain yang datanya **terenkripsi** dan memerlukan kunci keamanan khusus.\n` +
-                    `2. Web NFC API yang digunakan browser **tidak diizinkan** untuk membaca data sensitif ini demi alasan keamanan.\n` +
-                    `3. Kartu tersebut bukan dalam format NDEF terbuka yang didukung oleh API.\n` +
-                    `Silakan coba dengan tag NFC buatan Anda sendiri (NDEF).`;
+                    `🛑 PEMBACAAN GAGAL: Kartu Terenkripsi/Tidak Dapat Diakses.\n\n` +
+                    `Pesan Error Sistem: ${error.message || error.name}\n\n` +
+                    `INI BIASANYA TERJADI JIKA:\n` +
+                    `1. Anda memindai kartu komersial/enkripsi (KTP, Bank, e-Toll).\n` +
+                    `2. Kartu tersebut bukan dalam format NDEF terbuka.`;
                 
-                statusDiv.textContent = 'Status: Kartu Terenkripsi atau Gagal Dibaca!';
-                statusDiv.classList.remove('info', 'success');
-                statusDiv.classList.add('error');
+                updateStatus('Kartu Terenkripsi atau Gagal Dibaca!', 'error');
             };
 
         } catch (error) {
-            // Ini biasanya terjadi jika pengguna menolak izin NFC atau browser mengalami masalah mendadak.
+            // Error jika pengguna menolak izin, atau NFC mati
+            let errorMessage = `Error tak terduga: ${error.message}.`;
             if (error.name === 'NotAllowedError') {
-                 dataContent.textContent = `Error: Izin NFC Ditolak oleh Pengguna. Anda harus mengizinkan akses NFC.`;
-            } else {
-                 dataContent.textContent = `Error tak terduga saat memulai pemindaian: ${error.message}.`;
-            }
-           
-            statusDiv.textContent = 'Status: Error Awal!';
-            statusDiv.classList.remove('info', 'success');
-            statusDiv.classList.add('error');
+                 errorMessage = `Izin NFC Ditolak oleh Pengguna. Anda harus mengizinkan akses NFC.`;
+            } 
+            
+            dataContent.textContent = errorMessage;
+            updateStatus('Error Awal Saat Memulai Scan!', 'error');
         }
     });
 });

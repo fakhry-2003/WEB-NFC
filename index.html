@@ -3,80 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Web NFC Scanner</title>
-    <style>
-        /* Gaya Sederhana untuk Tampilan */
-        body {
-            font-family: sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-            background-color: #f4f4f9;
-            text-align: center;
-            padding: 20px;
-        }
-        h1 {
-            color: #333;
-        }
-        #scanButton {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            font-size: 18px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        #scanButton:hover:not(:disabled) {
-            background-color: #0056b3;
-        }
-        #scanButton:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-        }
-        #result {
-            margin-top: 30px;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            background-color: white;
-            width: 90%;
-            max-width: 500px;
-            text-align: left;
-            min-height: 100px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            white-space: pre-wrap; /* Mempertahankan format teks dari <pre> */
-        }
-        .status {
-            font-weight: bold;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #eee;
-        }
-        .success { color: #28a745; }
-        .error { color: #dc3545; }
-        .info { color: #ffc107; }
-        #dataContent {
-            font-size: 14px;
-            line-height: 1.6;
-        }
-    </style>
+    <title>Sistem Pemindaian NFC/RFID Profesional</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <h1>Web NFC Scanner Sederhana</h1>
-    <p>Aplikasi ini hanya berfungsi di **Chrome pada Android** dan membutuhkan **HTTPS**.</p>
+
+    <header class="main-header">
+        <div class="header-logo">
+            <i class="fas fa-wifi"></i> <span>NFC-SCANNER</span>
+        </div>
+        <button id="scanButton" disabled class="cta-header-button">
+            <i class="fas fa-search"></i> MULAI SCAN
+        </button>
+    </header>
+
+    <main class="container">
+        
+        <div class="hero-content">
+            <h1>NFC-SCAN: <br> VALIDASI KARTU DIGITALMU.</h1>
+            <p class="subtitle">Platform mutakhir untuk membaca payload NDEF dari kartu NFC.</p>
+
+            <div class="status-box glass-panel">
+                <div id="statusMessage" class="status info">
+                    Status: Sedang Memeriksa Dukungan NFC...
+                </div>
+                <p class="instruction-text">
+                    <i class="fas fa-info-circle"></i> Pastikan Anda menggunakan Chrome di Android dengan koneksi HTTPS.
+                </p>
+            </div>
+        </div>
+
+        <div class="hero-visual">
+            <i class="fas fa-mobile-alt hero-phone-icon"></i>
+            <p>Dekatkan Tag NFC ke ponsel setelah menekan tombol.</p>
+        </div>
+
+    </main>
     
-    <button id="scanButton" disabled>Mulai Scan NFC</button>
-    
-    <div id="result">
-        <div class="status info">Status: Sedang Memeriksa Dukungan NFC...</div>
-        <div id="dataContent">Mohon tunggu. Jika tombol tidak aktif, Web NFC mungkin tidak didukung di perangkat Anda.</div>
-    </div>
+    <section class="log-section">
+        <h2><i class="fas fa-terminal"></i> HASIL PEMINDAIAN LOG</h2>
+        <div class="result-area glass-panel" id="result">
+            <div id="dataContent" class="data-value">
+                Mohon tunggu. Jika tombol tidak aktif, Web NFC mungkin tidak didukung di perangkat Anda.
+            </div>
+        </div>
+    </section>
 
     <script src="script.js"></script>
 </body>

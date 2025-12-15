@@ -1,83 +1,95 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Mengambil elemen-elemen dari Hero Layout baru
-    const scanButton = document.getElementById('scanButton'); // Tombol di Header
-    const statusDiv = document.getElementById('statusMessage'); // Status di Hero Kiri
-    const dataContent = document.getElementById('dataContent'); // Data di Log Section
-    
-    // Fungsi pembantu untuk memperbarui status
-    const updateStatus = (message, statusClass) => {
-        // Reset kelas status lama dan tambahkan kelas status baru (info, success, error)
-        statusDiv.className = 'status ' + statusClass;
-        statusDiv.textContent = 'Status: ' + message;
-    }
 
-    // 1. Cek Dukungan Web NFC
+    const scanButton = document.getElementById('scanButton');
+    const statusDiv = document.getElementById('statusMessage');
+    const dataContent = document.getElementById('dataContent');
+
+    const writeModeBtn = document.getElementById('writeModeBtn');
+    const writeSection = document.getElementById('writeSection');
+    const writeButton = document.getElementById('writeButton');
+    const writeInput = document.getElementById('writeInput');
+    const recordType = document.getElementById('recordType');
+
+    const updateStatus = (msg, cls) => {
+        statusDiv.className = 'status ' + cls;
+        statusDiv.textContent = 'Status: ' + msg;
+    };
+
+    // Cek Web NFC
     if (!('NDEFReader' in window)) {
-        updateStatus('Web NFC TIDAK Didukung. Wajib Chrome Android/HTTPS.', 'error');
-        dataContent.textContent = 'Fungsionalitas ini hanya tersedia di Chrome pada Android (melalui koneksi HTTPS).';
-        scanButton.disabled = true; // MATI
+        updateStatus('Web NFC TIDAK Didukung', 'error');
+        dataContent.textContent =
+            'Gunakan Chrome Android + HTTPS.';
+        scanButton.disabled = true;
         return;
     }
-    
-    // Jika lolos cek, tombol diaktifkan
-    updateStatus('Web NFC Didukung. Tekan tombol MULAI SCAN di atas.', 'success');
-    dataContent.textContent = 'Sistem siap. Siapkan Tag NFC Anda.';
-    scanButton.disabled = false; // HIDUP
 
-    // --- LOGIKA UTAMA SAAT TOMBOL DIKLIK ---
+    updateStatus('Web NFC Didukung', 'success');
+    scanButton.disabled = false;
+    dataContent.textContent = 'Sistem siap.';
+
+    // SCAN NFC
     scanButton.addEventListener('click', async () => {
-        dataContent.textContent = 'Menunggu kartu... Tempelkan kartu NFC Anda sekarang.';
         updateStatus('Memindai...', 'info');
-        
+        dataContent.textContent = 'Tempelkan kartu NFC...';
+
         try {
             const ndef = new NDEFReader();
-            // Perintah untuk mulai membaca, ini akan memunculkan prompt izin sistem
             await ndef.scan();
 
-            // --- Handler Saat Pembacaan Berhasil (NDEF Ditemukan) ---
             ndef.onreading = event => {
-                const message = event.message;
-                const records = message.records;
-                let data = '✅ Kartu NDEF Ditemukan dan Berhasil Dibaca!\n\n';
+                let output = '✅ NFC TERBACA\n\n';
 
-                records.forEach((record, index) => {
-                    data += `--- Record ${index + 1} (${record.recordType})---\n`;
-                    data += `Mime Type: ${record.mediaType || 'N/A'}\n`;
-                    
-                    try {
-                        const decoder = new TextDecoder();
-                        const payload = decoder.decode(record.data);
-                        data += `Payload (Teks): ${payload}\n`;
-                    } catch (e) {
-                        data += 'Payload (Biner): Data ini bukan format teks sederhana.\n';
-                    }
+                event.message.records.forEach((r, i) => {
+                    const text = new TextDecoder().decode(r.data);
+                    output += `Record ${i + 1}\nType: ${r.recordType}\nData: ${text}\n\n`;
                 });
 
-                dataContent.textContent = data;
-                updateStatus('Pemindaian Berhasil!', 'success');
+                dataContent.textContent = output;
+                updateStatus('Scan Berhasil', 'success');
             };
 
-            // --- Handler Saat Pembacaan Gagal ---
-            ndef.onreadingerror = error => {
-                dataContent.textContent = 
-                    `🛑 PEMBACAAN GAGAL: Kartu Terenkripsi/Tidak Dapat Diakses.\n\n` +
-                    `Pesan Error Sistem: ${error.message || error.name}\n\n` +
-                    `INI BIASANYA TERJADI JIKA:\n` +
-                    `1. Anda memindai kartu komersial/enkripsi (KTP, Bank, e-Toll).\n` +
-                    `2. Kartu tersebut bukan dalam format NDEF terbuka.`;
-                
-                updateStatus('Kartu Terenkripsi atau Gagal Dibaca!', 'error');
+            ndef.onreadingerror = () => {
+                updateStatus('Gagal Membaca', 'error');
             };
 
-        } catch (error) {
-            // Error jika pengguna menolak izin, atau NFC mati
-            let errorMessage = `Error tak terduga: ${error.message}.`;
-            if (error.name === 'NotAllowedError') {
-                 errorMessage = `Izin NFC Ditolak oleh Pengguna. Anda harus mengizinkan akses NFC.`;
-            } 
-            
-            dataContent.textContent = errorMessage;
-            updateStatus('Error Awal Saat Memulai Scan!', 'error');
+        } catch (err) {
+            updateStatus('Error Scan', 'error');
+            dataContent.textContent = err.message;
         }
     });
+
+    // WRITE MODE
+    writeModeBtn.addEventListener('click', () => {
+        writeSection.style.display = 'block';
+        updateStatus('Mode TULIS Aktif', 'info');
+    });
+
+    // WRITE NFC
+    writeButton.addEventListener('click', async () => {
+        if (!writeInput.value.trim()) {
+            alert('Data kosong!');
+            return;
+        }
+
+        try {
+            const ndef = new NDEFReader();
+
+            await ndef.write({
+                records: [{
+                    recordType: recordType.value,
+                    data: writeInput.value
+                }]
+            });
+
+            updateStatus('Penulisan Berhasil', 'success');
+            dataContent.textContent =
+                `✅ NFC BERHASIL DITULIS\n\n${writeInput.value}`;
+
+        } catch (err) {
+            updateStatus('Penulisan Gagal', 'error');
+            dataContent.textContent = err.message;
+        }
+    });
+
 });

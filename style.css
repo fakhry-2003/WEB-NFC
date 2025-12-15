@@ -302,13 +302,19 @@ body {
 
 .write-section textarea {
     width: 100%;
-    min-height: 120px;
     padding: 12px;
     border-radius: 6px;
-    border: none;
-    resize: vertical;
     background: rgba(255,255,255,0.12);
     color: var(--text-color);
-    font-family: 'Consolas', monospace;
-    line-height: 1.5;
+    border: none;
+    resize: vertical;
+}
+.write-section select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.12);
+    color: var(--text-color);
+    border: none;
 }

@@ -277,3 +277,47 @@ body {
         font-size: 0.9em;
     }
 }
+/* ---------------------------------- */
+/* WRITE NFC SECTION (TAMBAHAN SAJA) */
+/* ---------------------------------- */
+.write-section {
+    width: 90%;
+    max-width: 500px;
+    padding: 25px;
+    margin: 40px auto;
+    text-align: left;
+}
+
+.write-section h2 {
+    margin-bottom: 20px;
+    color: var(--text-color);
+}
+
+.write-section label {
+    font-size: 0.85em;
+    color: rgba(255, 255, 255, 0.7);
+    display: block;
+    margin-bottom: 5px;
+}
+
+.write-section input,
+.write-section select {
+    width: 100%;
+    padding: 10px 12px;
+    margin-bottom: 20px;
+    border-radius: 6px;
+    border: none;
+    outline: none;
+    background: rgba(255, 255, 255, 0.12);
+    color: var(--text-color);
+    font-family: 'Poppins', sans-serif;
+}
+
+.write-section input::placeholder {
+    color: rgba(255,255,255,0.5);
+}
+
+.write-section .cta-header-button {
+    width: 100%;
+    text-align: center;
+}

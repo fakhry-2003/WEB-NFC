@@ -1,11 +1,16 @@
 document.addEventListener("DOMContentLoaded", () => {
 
+    /* ================= ELEMENT ================= */
     const scanButton     = document.getElementById("scanButton");
     const writeModeBtn   = document.getElementById("writeModeBtn");
-    const writeSection   = document.getElementById("writeSection");
     const writeButton    = document.getElementById("writeButton");
 
+    const writePopup     = document.getElementById("writePopup");
+    const popupBackdrop  = document.getElementById("popupBackdrop");
+
     const writeInput     = document.getElementById("writeInput");
+    const writeLog       = document.getElementById("writeLog");
+
     const statusMessage  = document.getElementById("statusMessage");
     const dataContent    = document.getElementById("dataContent");
 
@@ -13,24 +18,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let selectedType = "text";
 
-    
+    /* ================= STATUS ================= */
     function setStatus(message, type) {
         statusMessage.className = "status " + type;
         statusMessage.textContent = "Status: " + message;
     }
 
-  
+    /* ================= NFC SUPPORT CHECK ================= */
     if (!("NDEFReader" in window)) {
         setStatus("Web NFC tidak didukung (Chrome Android + HTTPS)", "error");
         dataContent.textContent =
             "Perangkat atau browser Anda tidak mendukung Web NFC.";
         scanButton.disabled = true;
+        writeModeBtn.disabled = true;
         return;
     }
 
     setStatus("Web NFC Didukung", "success");
 
-    
+    /* ================= TYPE TOGGLE ================= */
     typeButtons.forEach(btn => {
         btn.addEventListener("click", () => {
             typeButtons.forEach(b => b.classList.remove("active"));
@@ -39,66 +45,81 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-   
+    /* ================= OPEN WRITE POPUP ================= */
     writeModeBtn.addEventListener("click", () => {
-        writeSection.style.display = "block";   
-        writeInput.value = "";                  
+        writePopup.classList.add("active");
+        popupBackdrop.classList.add("active");
+
+        writeInput.value = "";
         selectedType = "text";
 
-        typeButtons.forEach(b => {
-            b.classList.toggle("active", b.dataset.type === "text");
-        });
+        typeButtons.forEach(b =>
+            b.classList.toggle("active", b.dataset.type === "text")
+        );
 
-        setStatus("Mode Tulis NFC Aktif", "info");
-        dataContent.textContent =
-            "Masukkan data (multi baris diperbolehkan), lalu tempelkan kartu NFC.";
+        writeLog.textContent =
+            "Pilih jenis data, lalu isi konten NFC.";
     });
 
-    
+    /* ================= CLOSE POPUP ================= */
+    popupBackdrop.addEventListener("click", () => {
+        writePopup.classList.remove("active");
+        popupBackdrop.classList.remove("active");
+    });
+
+    /* ================= WRITE NFC ================= */
     writeButton.addEventListener("click", async () => {
 
         const value = writeInput.value.trim();
-
         if (!value) {
-            alert("Data tidak boleh kosong!");
+            writeLog.textContent = "❌ Data tidak boleh kosong.";
             return;
         }
 
-        
         if (selectedType === "url") {
             try {
                 new URL(value);
             } catch {
-                alert("URL tidak valid!\nGunakan https:// atau http://");
+                writeLog.textContent = "❌ URL tidak valid (harus http/https).";
                 return;
             }
         }
 
+        writeLog.textContent = "📳 Tempelkan kartu NFC ke ponsel...";
+
         try {
             const ndef = new NDEFReader();
-            await ndef.write({
-                records: [
-                    {
-                        recordType: selectedType,
-                        data: value
-                    }
-                ]
-            });
 
+            const record =
+                selectedType === "url"
+                    ? { recordType: "url", data: value }
+                    : {
+                        recordType: "mime",
+                        mediaType: "text/plain",
+                        data: value
+                    };
+
+            await ndef.write({ records: [record] });
+
+            writeLog.textContent = "✅ Data berhasil ditulis ke NFC.";
             setStatus("Penulisan NFC Berhasil", "success");
+
             dataContent.textContent =
                 "DATA TERSIMPAN:\n\n" + value;
 
         } catch (err) {
+            writeLog.textContent = "❌ Gagal menulis NFC.";
             setStatus("Gagal Menulis NFC", "error");
-            dataContent.textContent = err.message;
         }
     });
 
-   
+    /* ================= SCAN NFC ================= */
     scanButton.addEventListener("click", async () => {
 
-        writeSection.style.display = "none";
+        /* tutup popup jika terbuka */
+        writePopup.classList.remove("active");
+        popupBackdrop.classList.remove("active");
+
         setStatus("Menunggu Kartu NFC...", "info");
         dataContent.textContent = "Tempelkan kartu NFC ke ponsel.";
 
@@ -115,8 +136,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     output += `Data :\n`;
 
                     try {
-                        const text = new TextDecoder().decode(record.data);
-                        output += text + "\n\n";
+                        output +=
+                            new TextDecoder().decode(record.data) + "\n\n";
                     } catch {
                         output += "[Binary Data]\n\n";
                     }

@@ -295,3 +295,42 @@ body {
     66% { content: ".."; }
     100% { content: "..."; }
 }
+/* ================= POPUP DEFAULT (MOBILE) ================= */
+.write-popup {
+    position: fixed;
+    left: 50%;
+    bottom: -100%;
+    transform: translateX(-50%);
+    width: 92%;
+    max-width: 500px;
+    padding: 25px;
+    border-radius: 18px 18px 0 0;
+    background: var(--card-bg-light);
+    backdrop-filter: blur(14px);
+    z-index: 2000;
+    transition: bottom 0.4s ease, transform 0.4s ease;
+    box-shadow: 0 -10px 40px rgba(0,0,0,0.6);
+}
+
+.write-popup.active {
+    bottom: 0;
+}
+
+/* ================= DESKTOP MODE ================= */
+@media (min-width: 768px) {
+
+    .write-popup {
+        top: 50%;
+        bottom: auto;
+        transform: translate(-50%, -50%) scale(0.95);
+        border-radius: 20px;
+        max-width: 520px;
+        box-shadow: 0 25px 60px rgba(0,0,0,0.7);
+        opacity: 0;
+    }
+
+    .write-popup.active {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}

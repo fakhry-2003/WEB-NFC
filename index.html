@@ -4,56 +4,77 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistem Pemindaian NFC/RFID Profesional</title>
-    
+
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600;900&display=swap" rel="stylesheet">
-    
     <link rel="stylesheet" href="style.css">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
 
-    <header class="main-header">
-        <div class="header-logo">
-            <i class="fas fa-wifi"></i> <span>NFC-SCANNER</span>
-        </div>
+<header class="main-header">
+    <div class="header-logo">
+        <i class="fas fa-wifi"></i> <span>NFC-SCANNER</span>
+    </div>
+
+    <div style="display:flex; gap:10px;">
         <button id="scanButton" disabled class="cta-header-button">
             <i class="fas fa-search"></i> MULAI SCAN
         </button>
-    </header>
 
-    <main class="container">
-        
-        <div class="hero-content">
-            <h1>NFC-SCAN: <br> VALIDASI KARTU DIGITALMU.</h1>
-            <p class="subtitle">Platform mutakhir untuk membaca payload NDEF dari kartu NFC.</p>
+        <button id="writeModeBtn" class="cta-header-button">
+            <i class="fas fa-pen"></i> TULIS NFC
+        </button>
+    </div>
+</header>
 
-            <div class="status-box glass-panel">
-                <div id="statusMessage" class="status info">
-                    Status: Sedang Memeriksa Dukungan NFC...
-                </div>
-                <p class="instruction-text">
-                    <i class="fas fa-info-circle"></i> Pastikan Anda menggunakan Chrome di Android dengan koneksi HTTPS.
-                </p>
+<main class="container">
+    <div class="hero-content">
+        <h1>NFC-SCAN: <br> VALIDASI KARTU DIGITALMU.</h1>
+        <p class="subtitle">Platform mutakhir untuk membaca payload NDEF dari kartu NFC.</p>
+
+        <div class="status-box glass-panel">
+            <div id="statusMessage" class="status info">
+                Status: Sedang Memeriksa Dukungan NFC...
             </div>
+            <p class="instruction-text">
+                <i class="fas fa-info-circle"></i> Gunakan Chrome Android dengan HTTPS
+            </p>
         </div>
+    </div>
 
-        <div class="hero-visual">
-            <i class="fas fa-mobile-alt hero-phone-icon"></i>
-            <p>Dekatkan Tag NFC ke ponsel setelah menekan tombol.</p>
+    <div class="hero-visual">
+        <i class="fas fa-mobile-alt hero-phone-icon"></i>
+        <p>Dekatkan Tag NFC ke ponsel</p>
+    </div>
+</main>
+
+<!-- WRITE NFC -->
+<section class="write-section glass-panel" id="writeSection" style="display:none;">
+    <h2><i class="fas fa-pen"></i> TULIS DATA KE NFC</h2>
+
+    <label>Jenis Data</label>
+    <select id="recordType">
+        <option value="text">Text</option>
+        <option value="url">URL</option>
+    </select>
+
+    <label>Isi Data</label>
+    <input id="writeInput" type="text" placeholder="Halo NFC / https://google.com">
+
+    <button id="writeButton" class="cta-header-button">
+        <i class="fas fa-upload"></i> TULIS KE KARTU
+    </button>
+</section>
+
+<section class="log-section">
+    <h2><i class="fas fa-terminal"></i> HASIL PEMINDAIAN LOG</h2>
+    <div class="result-area glass-panel">
+        <div id="dataContent" class="data-value">
+            Menunggu sistem siap...
         </div>
+    </div>
+</section>
 
-    </main>
-    
-    <section class="log-section">
-        <h2><i class="fas fa-terminal"></i> HASIL PEMINDAIAN LOG</h2>
-        <div class="result-area glass-panel" id="result">
-            <div id="dataContent" class="data-value">
-                Mohon tunggu. Jika tombol tidak aktif, Web NFC mungkin tidak didukung di perangkat Anda.
-            </div>
-        </div>
-    </section>
-
-    <script src="script.js"></script>
+<script src="script.js"></script>
 </body>
 </html>

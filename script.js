@@ -110,41 +110,52 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     /* ================= WRITE NFC BUTTON ================= */
-    writeButton.addEventListener("click", async (e) => {
-        e.stopPropagation();
+    writeButton.addEventListener("click", async () => {
+    const value = writeInput.value.trim();
 
-        const value = writeInput.value.trim();
-        if (!value) {
-            setPopupStatus("❌ Data tidak boleh kosong", "error");
+    if (!value) {
+        setPopupStatus("❌ Data tidak boleh kosong", "error");
+        return;
+    }
+
+    if (selectedType === "url") {
+        try {
+            new URL(value);
+        } catch {
+            setPopupStatus("❌ URL tidak valid", "error");
             return;
         }
+    }
 
-        if (selectedType === "url") {
-            try {
-                new URL(value);
-            } catch {
-                setPopupStatus("❌ URL tidak valid (http/https)", "error");
-                return;
-            }
-        }
+    try {
+        setPopupStatus("📳 Tempelkan kartu NFC...", "info");
 
-        try {
-            await writeNFCWithWaiting([
+        const ndef = new NDEFReader();
+
+        await ndef.write({
+            records: [
                 selectedType === "url"
                     ? { recordType: "url", data: value }
-                    : { recordType: "mime", mediaType: "text/plain", data: value }
-            ]);
+                    : {
+                        recordType: "mime",
+                        mediaType: "text/plain",
+                        data: value
+                    }
+            ]
+        });
 
-            setPopupStatus("✅ Data berhasil ditulis ke NFC", "success");
-            setStatus("Penulisan NFC Berhasil", "success");
+        setPopupStatus("✅ Berhasil ditulis ke NFC", "success");
+        setStatus("Penulisan NFC Berhasil", "success");
 
-            dataContent.textContent = "DATA TERSIMPAN:\n\n" + value;
+        dataContent.textContent = "DATA TERSIMPAN:\n\n" + value;
 
-        } catch (err) {
-            setPopupStatus("❌ Gagal menulis NFC", "error");
-            setStatus("Gagal Menulis NFC", "error");
-        }
-    });
+    } catch (err) {
+        setPopupStatus("❌ Gagal menulis NFC", "error");
+        setStatus("Gagal Menulis NFC", "error");
+        console.error(err);
+    }
+});
+
 
     /* ================= SCAN NFC ================= */
     scanButton.addEventListener("click", async () => {

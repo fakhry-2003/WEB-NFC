@@ -20,7 +20,6 @@
         <button id="scanButton" disabled class="cta-header-button">
             <i class="fas fa-search"></i> MULAI SCAN
         </button>
-
         <button id="writeModeBtn" class="cta-header-button">
             <i class="fas fa-pen"></i> TULIS NFC
         </button>
@@ -52,14 +51,9 @@
 <section class="write-section glass-panel" id="writeSection" style="display:none;">
     <h2><i class="fas fa-pen"></i> TULIS DATA KE NFC</h2>
 
-    <label>Jenis Data</label>
-    <select id="recordType">
-        <option value="text">Text</option>
-        <option value="url">URL</option>
-    </select>
-
-    <label>Isi Data</label>
-    <input id="writeInput" type="text" placeholder="Halo NFC / https://google.com">
+    <label>Isi Data (Multi Baris)</label>
+    <textarea id="writeInput" rows="4" placeholder="Nama : Fakhry
+NIM  : A710220027"></textarea>
 
     <button id="writeButton" class="cta-header-button">
         <i class="fas fa-upload"></i> TULIS KE KARTU

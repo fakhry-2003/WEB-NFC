@@ -17,7 +17,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const typeButtons    = document.querySelectorAll(".type-btn");
 
     let selectedType = "text";
-    let ndef = null;
     let popupOpen = false;
 
     /* ================= STATUS ================= */
@@ -33,9 +32,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* ================= POPUP CONTROL ================= */
     function openPopup() {
-        popupOpen = true;
         writePopup.classList.add("active");
         popupBackdrop.classList.add("active");
+        popupOpen = true;
+
         scanButton.disabled = true;
 
         writeInput.value = "";
@@ -46,37 +46,36 @@ document.addEventListener("DOMContentLoaded", () => {
             b.classList.toggle("active", b.dataset.type === "text")
         );
 
-        setPopupStatus("Isi data, lalu klik TULIS NFC.", "info");
+        setPopupStatus("Masukkan data, lalu tekan TULIS NFC.", "info");
     }
 
     function closePopup() {
-        popupOpen = false;
         writePopup.classList.remove("active");
         popupBackdrop.classList.remove("active");
+        popupOpen = false;
+
         scanButton.disabled = false;
     }
 
-    /* ================= NFC SUPPORT CHECK ================= */
+    /* ================= NFC SUPPORT ================= */
     if (!("NDEFReader" in window)) {
         setStatus("Web NFC tidak didukung (Chrome Android + HTTPS)", "error");
-        dataContent.textContent =
-            "Perangkat atau browser Anda tidak mendukung Web NFC.";
         scanButton.disabled = true;
         writeModeBtn.disabled = true;
+        dataContent.textContent =
+            "Perangkat atau browser Anda tidak mendukung Web NFC.";
         return;
     }
 
     setStatus("Web NFC Didukung", "success");
 
-    /* ================= PREVENT CLICK BUBBLE ================= */
+    /* ================= PREVENT POPUP CLOSE ================= */
     writePopup.addEventListener("click", e => e.stopPropagation());
-    typeButtons.forEach(btn => btn.addEventListener("click", e => e.stopPropagation()));
-    writeButton.addEventListener("click", e => e.stopPropagation());
-    writeInput.addEventListener("click", e => e.stopPropagation());
 
-    /* ================= TYPE TOGGLE ================= */
+    /* ================= TYPE BUTTON ================= */
     typeButtons.forEach(btn => {
-        btn.addEventListener("click", () => {
+        btn.addEventListener("click", e => {
+            e.stopPropagation();
             typeButtons.forEach(b => b.classList.remove("active"));
             btn.classList.add("active");
             selectedType = btn.dataset.type;
@@ -84,24 +83,21 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     /* ================= OPEN POPUP ================= */
-    writeModeBtn.addEventListener("click", () => {
-        if (!popupOpen) openPopup();
-    });
+    writeModeBtn.addEventListener("click", openPopup);
 
-    /* ================= CLOSE BY BACKDROP ================= */
-    popupBackdrop.addEventListener("click", () => {
-        closePopup();
-    });
+    /* ================= BACKDROP CLOSE ================= */
+    popupBackdrop.addEventListener("click", closePopup);
 
-    /* ================= ESC / BACK ANDROID ================= */
-    document.addEventListener("keydown", (e) => {
+    /* ================= ESC / BACK ================= */
+    document.addEventListener("keydown", e => {
         if (e.key === "Escape" && popupOpen) {
             closePopup();
         }
     });
 
     /* ================= WRITE NFC ================= */
-    writeButton.addEventListener("click", async () => {
+    writeButton.addEventListener("click", async e => {
+        e.stopPropagation();
 
         const value = writeInput.value.trim();
         if (!value) {
@@ -113,16 +109,17 @@ document.addEventListener("DOMContentLoaded", () => {
             try {
                 new URL(value);
             } catch {
-                setPopupStatus("❌ URL tidak valid (http / https).", "error");
+                setPopupStatus("❌ URL harus valid (http / https).", "error");
                 return;
             }
         }
 
-        setPopupStatus("📳 Silakan tempelkan kartu NFC ke ponsel...", "info");
-        setStatus("Menunggu kartu NFC untuk ditulis...", "info");
+        // 🔥 MASUK MODE MENUNGGU
+        setPopupStatus("📳 Tempelkan kartu NFC ke ponsel...", "info");
+        setStatus("Menunggu kartu NFC...", "info");
 
         try {
-            if (!ndef) ndef = new NDEFReader();
+            const ndef = new NDEFReader();
 
             const record =
                 selectedType === "url"
@@ -133,6 +130,10 @@ document.addEventListener("DOMContentLoaded", () => {
                         data: value
                     };
 
+            /**
+             * 🔴 write() akan MENUNGGU kartu,
+             * bukan langsung gagal
+             */
             await ndef.write({ records: [record] });
 
             setPopupStatus("✅ Data berhasil ditulis ke NFC.", "success");
@@ -143,10 +144,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         } catch (err) {
             setPopupStatus(
-                "❌ Gagal menulis NFC. Pastikan kartu ditempel & NFC aktif.",
+                "❌ Penulisan dibatalkan atau kartu tidak terdeteksi.",
                 "error"
             );
-            setStatus("Gagal Menulis NFC", "error");
+            setStatus("Penulisan NFC Dibatalkan", "error");
         }
     });
 
@@ -155,11 +156,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         closePopup();
 
-        setStatus("📳 Menunggu Kartu NFC...", "info");
+        setStatus("📳 Menunggu kartu NFC...", "info");
         dataContent.textContent = "Tempelkan kartu NFC ke ponsel.";
 
         try {
-            if (!ndef) ndef = new NDEFReader();
+            const ndef = new NDEFReader();
             await ndef.scan();
 
             ndef.onreading = event => {
@@ -171,7 +172,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     output += `Data :\n`;
 
                     try {
-                        output += new TextDecoder().decode(record.data) + "\n\n";
+                        output +=
+                            new TextDecoder().decode(record.data) + "\n\n";
                     } catch {
                         output += "[Binary Data]\n\n";
                     }

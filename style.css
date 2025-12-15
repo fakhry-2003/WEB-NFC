@@ -334,3 +334,16 @@ body {
         transform: translate(-50%, -50%) scale(1);
     }
 }
+.write-popup.active {
+    animation: popupGlow 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes popupGlow {
+    from {
+        box-shadow: 0 0 20px rgba(255,105,180,0.4);
+    }
+    to {
+        box-shadow: 0 0 35px rgba(0,191,255,0.6);
+    }
+}
+

@@ -3,10 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Pemindaian & Penulisan NFC</title>
+    <title>NFC Scan & Write Web System</title>
 
+    <!-- FONT -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600;900&display=swap" rel="stylesheet">
+
+    <!-- ICON -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <!-- CSS -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -14,13 +19,15 @@
 <!-- ================= HEADER ================= -->
 <header class="main-header">
     <div class="header-logo">
-        <i class="fas fa-wifi"></i> <span>NFC-SCANNER</span>
+        <i class="fas fa-wifi"></i>
+        <span>NFC-SCANNER</span>
     </div>
 
-    <div>
+    <div class="header-actions">
         <button id="writeModeBtn" class="cta-header-button">
             <i class="fas fa-pen"></i> TULIS NFC
         </button>
+
         <button id="scanButton" class="cta-header-button">
             <i class="fas fa-search"></i> MULAI SCAN
         </button>
@@ -31,6 +38,7 @@
 <main class="container">
     <div class="hero-content">
         <h1>NFC SCAN & WRITE<br>WEB SYSTEM</h1>
+
         <p class="subtitle">
             Membaca dan menulis data NFC berbasis Web NFC
         </p>
@@ -39,9 +47,10 @@
             <div id="statusMessage" class="status info">
                 Status: Mengecek dukungan NFC...
             </div>
+
             <p class="instruction-text">
                 <i class="fas fa-info-circle"></i>
-                Gunakan Chrome Android yang mendukung NFC
+                Gunakan Chrome Android & HTTPS
             </p>
         </div>
     </div>
@@ -63,39 +72,45 @@
     </div>
 </section>
 
-<!-- ================= POP BAR TULIS NFC ================= -->
-<div id="writePopup" class="write-popup">
+<!-- ================= POPUP TULIS NFC (MODAL TENGAH) ================= -->
+<div id="popupBackdrop" class="popup-backdrop">
 
-    <div class="popup-handle"></div>
+    <div id="writePopup" class="write-popup glass-panel">
 
-    <h2><i class="fas fa-pen"></i> Tulis Data ke NFC</h2>
+        <h2><i class="fas fa-pen"></i> Tulis Data ke NFC</h2>
 
-    <label>Jenis Data</label>
-    <div class="type-toggle">
-        <button class="type-btn active" data-type="text">TEXT</button>
-        <button class="type-btn" data-type="url">URL</button>
+        <label>Jenis Data</label>
+        <div class="type-toggle">
+            <button class="type-btn active" data-type="text">TEXT</button>
+            <button class="type-btn" data-type="url">URL</button>
+        </div>
+
+        <label>Isi Data</label>
+        <textarea
+            id="writeInput"
+            rows="4"
+            placeholder="Tulis data bebas di sini..."></textarea>
+
+        <div class="popup-actions">
+            <button id="writeButton" class="cta-header-button">
+                <i class="fas fa-save"></i> TULIS NFC
+            </button>
+
+            <button id="closePopup" class="close-btn">
+                ✕
+            </button>
+        </div>
+
+        <!-- MINI LOG -->
+        <div id="writeLog" class="mini-log">
+            Pilih tipe data, isi konten, lalu tempelkan kartu NFC ke ponsel
+        </div>
+
     </div>
-
-    <label>Isi Data</label>
-    <textarea
-        id="writeInput"
-        rows="4"
-        placeholder="Tulis data bebas di sini..."></textarea>
-
-    <button id="writeButton" class="cta-header-button" style="margin-top:15px;">
-        <i class="fas fa-save"></i> TULIS KE NFC
-    </button>
-
-    <!-- MINI LOG -->
-    <div id="writeLog" class="mini-log">
-        Pilih tipe data, lalu isi konten NFC.
-    </div>
-
 </div>
 
-<!-- BACKDROP -->
-<div id="popupBackdrop" class="popup-backdrop"></div>
-
+<!-- ================= SCRIPT ================= -->
 <script src="script.js"></script>
+
 </body>
 </html>

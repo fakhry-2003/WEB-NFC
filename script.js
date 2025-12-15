@@ -1,38 +1,47 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-    const scanButton    = document.getElementById("scanButton");
-    const writeModeBtn  = document.getElementById("writeModeBtn");
-    const writeButton   = document.getElementById("writeButton");
+    /* ================= ELEMENT ================= */
+    const scanButton     = document.getElementById("scanButton");
+    const writeModeBtn   = document.getElementById("writeModeBtn");
+    const writeButton    = document.getElementById("writeButton");
 
-    const writePopup    = document.getElementById("writePopup");
-    const popupBackdrop = document.getElementById("popupBackdrop");
+    const writePopup     = document.getElementById("writePopup");
+    const popupBackdrop  = document.getElementById("popupBackdrop");
 
-    const writeInput    = document.getElementById("writeInput");
-    const writeLog      = document.getElementById("writeLog");
+    const writeInput     = document.getElementById("writeInput");
+    const writeLog       = document.getElementById("writeLog");
 
-    const statusMessage = document.getElementById("statusMessage");
-    const dataContent   = document.getElementById("dataContent");
+    const statusMessage  = document.getElementById("statusMessage");
+    const dataContent    = document.getElementById("dataContent");
 
-    const typeButtons   = document.querySelectorAll(".type-btn");
+    const typeButtons    = document.querySelectorAll(".type-btn");
 
     let selectedType = "text";
-    let popupOpen = false;
+    let ndef = null;
 
-    /* ================= STATUS UTAMA ================= */
-    function setStatus(msg, type) {
+    /* ================= STATUS ================= */
+    function setStatus(message, type = "info") {
         statusMessage.className = "status " + type;
-        statusMessage.textContent = "Status: " + msg;
+        statusMessage.textContent = "Status: " + message;
     }
 
-    /* ================= STATUS POPUP ================= */
-    function setPopupStatus(msg, type = "info") {
-        writeLog.className = "mini-log " + type;
-        writeLog.innerHTML = msg;
+    function setPopupStatus(message, type = "info") {
+        writeLog.className = "write-log " + type;
+        writeLog.textContent = message;
     }
 
-    /* ================= NFC SUPPORT ================= */
+    /* ================= CLOSE POPUP ================= */
+    function closePopup() {
+        writePopup.classList.remove("active");
+        popupBackdrop.classList.remove("active");
+        scanButton.disabled = false;
+    }
+
+    /* ================= NFC SUPPORT CHECK ================= */
     if (!("NDEFReader" in window)) {
-        setStatus("Web NFC tidak didukung", "error");
+        setStatus("Web NFC tidak didukung (Chrome Android + HTTPS)", "error");
+        dataContent.textContent =
+            "Perangkat atau browser Anda tidak mendukung Web NFC.";
         scanButton.disabled = true;
         writeModeBtn.disabled = true;
         return;
@@ -40,22 +49,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
     setStatus("Web NFC Didukung", "success");
 
-    /* ================= TYPE ================= */
+    /* ================= PREVENT POPUP CLOSE ================= */
+    writePopup.addEventListener("click", (e) => {
+        e.stopPropagation();
+    });
+
+    /* ================= TYPE TOGGLE ================= */
     typeButtons.forEach(btn => {
-        btn.addEventListener("click", () => {
+        btn.addEventListener("click", (e) => {
+            e.stopPropagation();
             typeButtons.forEach(b => b.classList.remove("active"));
             btn.classList.add("active");
             selectedType = btn.dataset.type;
         });
     });
 
-    /* ================= OPEN POPUP ================= */
-    function openPopup() {
-        popupOpen = true;
+    /* ================= OPEN WRITE POPUP ================= */
+    writeModeBtn.addEventListener("click", () => {
         writePopup.classList.add("active");
         popupBackdrop.classList.add("active");
 
         scanButton.disabled = true;
+
         writeInput.value = "";
         writeInput.focus();
 
@@ -64,59 +79,64 @@ document.addEventListener("DOMContentLoaded", () => {
             b.classList.toggle("active", b.dataset.type === "text")
         );
 
-        setPopupStatus(
-            '📋 Isi data NFC lalu tempelkan kartu<br>📳 <span class="nfc-scan">Menunggu aksi</span>'
-        );
-    }
+        setPopupStatus("Masukkan data, lalu tempelkan kartu NFC.", "info");
+    });
 
-    /* ================= CLOSE POPUP ================= */
-    function closePopup() {
-        popupOpen = false;
-        writePopup.classList.remove("active");
-        popupBackdrop.classList.remove("active");
-        scanButton.disabled = false;
-    }
+    /* ================= BACKDROP CLOSE ================= */
+    popupBackdrop.addEventListener("click", () => {
+        closePopup();
+    });
 
-    writeModeBtn.addEventListener("click", openPopup);
-    popupBackdrop.addEventListener("click", closePopup);
-
-    /* ================= ESC KEY ================= */
-    document.addEventListener("keydown", e => {
-        if (e.key === "Escape" && popupOpen) {
+    /* ================= ESC / BACK ANDROID ================= */
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && writePopup.classList.contains("active")) {
             closePopup();
         }
     });
 
     /* ================= WRITE NFC ================= */
-    writeButton.addEventListener("click", async () => {
+    writeButton.addEventListener("click", async (e) => {
+        e.stopPropagation();
 
         const value = writeInput.value.trim();
         if (!value) {
-            setPopupStatus("❌ Data tidak boleh kosong", "error");
+            setPopupStatus("❌ Data tidak boleh kosong.", "error");
             return;
         }
 
-        setPopupStatus(
-            '📳 Tempelkan kartu NFC... <span class="nfc-scan">Menunggu</span>'
-        );
+        if (selectedType === "url") {
+            try {
+                new URL(value);
+            } catch {
+                setPopupStatus("❌ URL tidak valid (http / https).", "error");
+                return;
+            }
+        }
+
+        setPopupStatus("📳 Tempelkan kartu NFC ke ponsel...", "info");
 
         try {
-            const ndef = new NDEFReader();
+            if (!ndef) ndef = new NDEFReader();
+
             const record =
                 selectedType === "url"
                     ? { recordType: "url", data: value }
-                    : { recordType: "mime", mediaType: "text/plain", data: value };
+                    : {
+                        recordType: "mime",
+                        mediaType: "text/plain",
+                        data: value
+                    };
 
             await ndef.write({ records: [record] });
 
-            setPopupStatus("✅ Data berhasil ditulis ke NFC", "success");
+            setPopupStatus("✅ Data berhasil ditulis ke NFC.", "success");
             setStatus("Penulisan NFC Berhasil", "success");
 
             dataContent.textContent =
                 "DATA TERSIMPAN:\n\n" + value;
 
-        } catch {
-            setPopupStatus("❌ Gagal menulis NFC", "error");
+        } catch (err) {
+            setPopupStatus("❌ Gagal menulis NFC.", "error");
             setStatus("Gagal Menulis NFC", "error");
         }
     });
@@ -124,26 +144,44 @@ document.addEventListener("DOMContentLoaded", () => {
     /* ================= SCAN NFC ================= */
     scanButton.addEventListener("click", async () => {
 
-        setStatus("Menunggu Kartu NFC...", "info");
-        dataContent.innerHTML =
-            '📳 Scan NFC <span class="nfc-scan">Menunggu</span>';
+        closePopup();
+
+        setStatus("📳 Menunggu Kartu NFC...", "info");
+        dataContent.textContent = "Tempelkan kartu NFC ke ponsel.";
 
         try {
-            const ndef = new NDEFReader();
+            if (!ndef) ndef = new NDEFReader();
             await ndef.scan();
 
             ndef.onreading = event => {
                 let output = "DATA NFC:\n\n";
-                event.message.records.forEach((r, i) => {
-                    output += `Record ${i+1}\n`;
-                    output += new TextDecoder().decode(r.data) + "\n\n";
+
+                event.message.records.forEach((record, index) => {
+                    output += `Record ${index + 1}\n`;
+                    output += `Type : ${record.recordType}\n`;
+                    output += `Data :\n`;
+
+                    try {
+                        output +=
+                            new TextDecoder().decode(record.data) + "\n\n";
+                    } catch {
+                        output += "[Binary Data]\n\n";
+                    }
                 });
+
                 dataContent.textContent = output;
                 setStatus("Scan Berhasil", "success");
             };
 
-        } catch {
-            setStatus("Scan Dibatalkan", "error");
+            ndef.onreadingerror = () => {
+                setStatus("Gagal Membaca NFC", "error");
+                dataContent.textContent =
+                    "Kartu tidak bisa dibaca atau terenkripsi.";
+            };
+
+        } catch (err) {
+            setStatus("Scan Dibatalkan / NFC Mati", "error");
+            dataContent.textContent = err.message;
         }
     });
 

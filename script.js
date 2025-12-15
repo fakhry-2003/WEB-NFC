@@ -8,18 +8,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const writeSection = document.getElementById('writeSection');
     const writeButton = document.getElementById('writeButton');
     const writeInput = document.getElementById('writeInput');
-    const recordType = document.getElementById('recordType');
 
     const updateStatus = (msg, cls) => {
         statusDiv.className = 'status ' + cls;
         statusDiv.textContent = 'Status: ' + msg;
     };
 
-    // Cek Web NFC
+    // CEK WEB NFC
     if (!('NDEFReader' in window)) {
         updateStatus('Web NFC TIDAK Didukung', 'error');
-        dataContent.textContent =
-            'Gunakan Chrome Android + HTTPS.';
+        dataContent.textContent = 'Gunakan Chrome Android dengan HTTPS.';
         scanButton.disabled = true;
         return;
     }
@@ -28,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
     scanButton.disabled = false;
     dataContent.textContent = 'Sistem siap.';
 
-    // SCAN NFC
+    // MODE SCAN
     scanButton.addEventListener('click', async () => {
         updateStatus('Memindai...', 'info');
         dataContent.textContent = 'Tempelkan kartu NFC...';
@@ -42,7 +40,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 event.message.records.forEach((r, i) => {
                     const text = new TextDecoder().decode(r.data);
-                    output += `Record ${i + 1}\nType: ${r.recordType}\nData: ${text}\n\n`;
+                    output += 
+`Record ${i + 1}
+Type : ${r.recordType}
+Data :
+${text}
+
+`;
                 });
 
                 dataContent.textContent = output;
@@ -50,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             ndef.onreadingerror = () => {
-                updateStatus('Gagal Membaca', 'error');
+                updateStatus('Gagal Membaca NFC', 'error');
             };
 
         } catch (err) {
@@ -59,32 +63,36 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // WRITE MODE
+    // MODE WRITE
     writeModeBtn.addEventListener('click', () => {
         writeSection.style.display = 'block';
-        updateStatus('Mode TULIS Aktif', 'info');
+        updateStatus('Mode TULIS NFC Aktif', 'info');
+        dataContent.textContent = 'Masukkan data lalu tempelkan kartu NFC.';
     });
 
     // WRITE NFC
     writeButton.addEventListener('click', async () => {
-        if (!writeInput.value.trim()) {
-            alert('Data kosong!');
+        const value = writeInput.value.trim();
+        if (!value) {
+            alert('Data tidak boleh kosong');
             return;
         }
 
         try {
             const ndef = new NDEFReader();
-
             await ndef.write({
                 records: [{
-                    recordType: recordType.value,
-                    data: writeInput.value
+                    recordType: 'text',
+                    data: value
                 }]
             });
 
             updateStatus('Penulisan Berhasil', 'success');
             dataContent.textContent =
-                `✅ NFC BERHASIL DITULIS\n\n${writeInput.value}`;
+`✅ NFC BERHASIL DITULIS
+
+${value}
+`;
 
         } catch (err) {
             updateStatus('Penulisan Gagal', 'error');

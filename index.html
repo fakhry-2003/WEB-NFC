@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Pemindaian NFC/RFID Profesional</title>
+    <title>NFC Scanner</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
 
 <header class="main-header">
     <div class="header-logo">
-        <i class="fas fa-wifi"></i> <span>NFC-SCANNER</span>
+        <i class="fas fa-wifi"></i> NFC-SCANNER
     </div>
 
     <div style="display:flex; gap:10px;">
-        <button id="scanButton" disabled class="cta-header-button">
+        <button id="scanButton" class="cta-header-button">
             <i class="fas fa-search"></i> MULAI SCAN
         </button>
         <button id="writeModeBtn" class="cta-header-button">
@@ -28,32 +28,32 @@
 
 <main class="container">
     <div class="hero-content">
-        <h1>NFC-SCAN: <br> VALIDASI KARTU DIGITALMU.</h1>
-        <p class="subtitle">Platform mutakhir untuk membaca payload NDEF dari kartu NFC.</p>
+        <h1>NFC SCANNER</h1>
+        <p class="subtitle">Scan & Tulis Data NFC</p>
 
         <div class="status-box glass-panel">
             <div id="statusMessage" class="status info">
-                Status: Sedang Memeriksa Dukungan NFC...
+                Status: Menunggu aksi...
             </div>
             <p class="instruction-text">
-                <i class="fas fa-info-circle"></i> Gunakan Chrome Android dengan HTTPS
+                Gunakan Chrome Android + HTTPS
             </p>
         </div>
     </div>
-
-    <div class="hero-visual">
-        <i class="fas fa-mobile-alt hero-phone-icon"></i>
-        <p>Dekatkan Tag NFC ke ponsel</p>
-    </div>
 </main>
 
-<!-- WRITE NFC -->
-<section class="write-section glass-panel" id="writeSection" style="display:none;">
+<!-- WRITE SECTION -->
+<section id="writeSection" class="write-section glass-panel" style="display:none;">
     <h2><i class="fas fa-pen"></i> TULIS DATA KE NFC</h2>
 
-    <label>Isi Data (Multi Baris)</label>
-    <textarea id="writeInput" rows="4" placeholder="Nama : Fakhry
-NIM  : A710220027"></textarea>
+    <label>Jenis Data</label>
+    <select id="recordType">
+        <option value="text">Text</option>
+        <option value="url">URL</option>
+    </select>
+
+    <label>Isi Data</label>
+    <textarea id="writeInput" rows="4" placeholder="Isi data bebas di sini..."></textarea>
 
     <button id="writeButton" class="cta-header-button">
         <i class="fas fa-upload"></i> TULIS KE KARTU
@@ -61,10 +61,10 @@ NIM  : A710220027"></textarea>
 </section>
 
 <section class="log-section">
-    <h2><i class="fas fa-terminal"></i> HASIL PEMINDAIAN LOG</h2>
+    <h2>>_ HASIL PEMINDAIAN LOG</h2>
     <div class="result-area glass-panel">
         <div id="dataContent" class="data-value">
-            Menunggu sistem siap...
+            Menunggu data...
         </div>
     </div>
 </section>

@@ -18,6 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let selectedType = "text";
     let ndef = null;
+    let popupOpen = false;
 
     /* ================= STATUS ================= */
     function setStatus(message, type = "info") {
@@ -30,8 +31,26 @@ document.addEventListener("DOMContentLoaded", () => {
         writeLog.textContent = message;
     }
 
-    /* ================= CLOSE POPUP ================= */
+    /* ================= POPUP CONTROL ================= */
+    function openPopup() {
+        popupOpen = true;
+        writePopup.classList.add("active");
+        popupBackdrop.classList.add("active");
+        scanButton.disabled = true;
+
+        writeInput.value = "";
+        writeInput.focus();
+
+        selectedType = "text";
+        typeButtons.forEach(b =>
+            b.classList.toggle("active", b.dataset.type === "text")
+        );
+
+        setPopupStatus("Isi data, lalu klik TULIS NFC.", "info");
+    }
+
     function closePopup() {
+        popupOpen = false;
         writePopup.classList.remove("active");
         popupBackdrop.classList.remove("active");
         scanButton.disabled = false;
@@ -49,54 +68,40 @@ document.addEventListener("DOMContentLoaded", () => {
 
     setStatus("Web NFC Didukung", "success");
 
-    /* ================= PREVENT POPUP CLOSE ================= */
-    writePopup.addEventListener("click", (e) => {
-        e.stopPropagation();
-    });
+    /* ================= PREVENT CLICK BUBBLE ================= */
+    writePopup.addEventListener("click", e => e.stopPropagation());
+    typeButtons.forEach(btn => btn.addEventListener("click", e => e.stopPropagation()));
+    writeButton.addEventListener("click", e => e.stopPropagation());
+    writeInput.addEventListener("click", e => e.stopPropagation());
 
     /* ================= TYPE TOGGLE ================= */
     typeButtons.forEach(btn => {
-        btn.addEventListener("click", (e) => {
-            e.stopPropagation();
+        btn.addEventListener("click", () => {
             typeButtons.forEach(b => b.classList.remove("active"));
             btn.classList.add("active");
             selectedType = btn.dataset.type;
         });
     });
 
-    /* ================= OPEN WRITE POPUP ================= */
+    /* ================= OPEN POPUP ================= */
     writeModeBtn.addEventListener("click", () => {
-        writePopup.classList.add("active");
-        popupBackdrop.classList.add("active");
-
-        scanButton.disabled = true;
-
-        writeInput.value = "";
-        writeInput.focus();
-
-        selectedType = "text";
-        typeButtons.forEach(b =>
-            b.classList.toggle("active", b.dataset.type === "text")
-        );
-
-        setPopupStatus("Masukkan data, lalu tempelkan kartu NFC.", "info");
+        if (!popupOpen) openPopup();
     });
 
-    /* ================= BACKDROP CLOSE ================= */
+    /* ================= CLOSE BY BACKDROP ================= */
     popupBackdrop.addEventListener("click", () => {
         closePopup();
     });
 
     /* ================= ESC / BACK ANDROID ================= */
     document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape" && writePopup.classList.contains("active")) {
+        if (e.key === "Escape" && popupOpen) {
             closePopup();
         }
     });
 
     /* ================= WRITE NFC ================= */
-    writeButton.addEventListener("click", async (e) => {
-        e.stopPropagation();
+    writeButton.addEventListener("click", async () => {
 
         const value = writeInput.value.trim();
         if (!value) {
@@ -113,7 +118,8 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
-        setPopupStatus("📳 Tempelkan kartu NFC ke ponsel...", "info");
+        setPopupStatus("📳 Silakan tempelkan kartu NFC ke ponsel...", "info");
+        setStatus("Menunggu kartu NFC untuk ditulis...", "info");
 
         try {
             if (!ndef) ndef = new NDEFReader();
@@ -136,7 +142,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 "DATA TERSIMPAN:\n\n" + value;
 
         } catch (err) {
-            setPopupStatus("❌ Gagal menulis NFC.", "error");
+            setPopupStatus(
+                "❌ Gagal menulis NFC. Pastikan kartu ditempel & NFC aktif.",
+                "error"
+            );
             setStatus("Gagal Menulis NFC", "error");
         }
     });
@@ -162,8 +171,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     output += `Data :\n`;
 
                     try {
-                        output +=
-                            new TextDecoder().decode(record.data) + "\n\n";
+                        output += new TextDecoder().decode(record.data) + "\n\n";
                     } catch {
                         output += "[Binary Data]\n\n";
                     }
